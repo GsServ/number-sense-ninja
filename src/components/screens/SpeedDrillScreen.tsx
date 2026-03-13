@@ -4,7 +4,7 @@ import { TIER_CATEGORIES, CATEGORY_DISPLAY_NAMES, WEAK_CATEGORIES } from '@/type
 import { generateProblem } from '@/lib/problems/generator';
 import { selectNextCategory } from '@/lib/adaptive';
 import { ProblemDisplay } from '../game/ProblemDisplay';
-import { AnswerInput } from '../game/AnswerInput';
+import { MultipleChoice } from '../game/MultipleChoice';
 import { ScoreBar } from '../game/ScoreBar';
 import { ResultsSummary } from '../game/ResultsSummary';
 import { isEstimationCorrect, calculateXp } from '@/lib/scoring';
@@ -229,12 +229,7 @@ export function SpeedDrillScreen({ onNavigate }: SpeedDrillScreenProps) {
           )}
 
           {!flashState && (
-            <AnswerInput
-              onSubmit={handleSubmit}
-              allowSlash={problem.category.includes('fraction')}
-              allowDecimal={problem.category.includes('decimal')}
-              allowText={problem.category === 'prime_numbers' || problem.category === 'arabic_to_roman'}
-            />
+            <MultipleChoice problem={problem} onSubmit={handleSubmit} />
           )}
         </>
       )}

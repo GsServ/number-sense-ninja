@@ -8,7 +8,7 @@ import { generateProblem } from '@/lib/problems/generator';
 import { selectNextCategory } from '@/lib/adaptive';
 import { isEstimationCorrect, calculateXp } from '@/lib/scoring';
 import { ProblemDisplay } from '../game/ProblemDisplay';
-import { AnswerInput } from '../game/AnswerInput';
+import { MultipleChoice } from '../game/MultipleChoice';
 import { Feedback } from '../game/Feedback';
 import { EstimationNumberLine } from '../game/EstimationNumberLine';
 import { ScoreBar } from '../game/ScoreBar';
@@ -188,7 +188,7 @@ export function EstimationScreen({ onNavigate }: EstimationScreenProps) {
       {problem && !feedback && (
         <>
           <ProblemDisplay problem={problem} />
-          <AnswerInput onSubmit={handleSubmit} allowDecimal />
+          <MultipleChoice problem={problem} onSubmit={handleSubmit} />
         </>
       )}
 

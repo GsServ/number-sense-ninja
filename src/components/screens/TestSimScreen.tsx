@@ -3,7 +3,7 @@ import type { Screen, Problem, ProblemAttempt } from '@/types';
 import { generateTestSimProblems } from '@/lib/problems/generator';
 import { calculatePSIAScore, isEstimationCorrect, calculateXp } from '@/lib/scoring';
 import { ProblemDisplay } from '../game/ProblemDisplay';
-import { AnswerInput } from '../game/AnswerInput';
+import { MultipleChoice } from '../game/MultipleChoice';
 import { Timer } from '../game/Timer';
 import { ResultsSummary } from '../game/ResultsSummary';
 import { loadData, saveData } from '@/lib/storage';
@@ -221,12 +221,7 @@ export function TestSimScreen({ onNavigate }: TestSimScreenProps) {
       {problem && (
         <>
           <ProblemDisplay problem={problem} />
-          <AnswerInput
-            onSubmit={handleSubmit}
-            allowSlash={problem.category.includes('fraction')}
-            allowDecimal={problem.category.includes('decimal')}
-            allowText={problem.category === 'prime_numbers' || problem.category === 'arabic_to_roman'}
-          />
+          <MultipleChoice problem={problem} onSubmit={handleSubmit} />
         </>
       )}
 

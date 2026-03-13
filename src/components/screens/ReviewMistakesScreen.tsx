@@ -8,7 +8,7 @@ import { loadData, saveData } from '@/lib/storage';
 import { updateCategoryStats, addXpToProfile, updateDailyStreak } from '@/lib/stats';
 import { HINTS } from '@/lib/problems/hints';
 import { ProblemDisplay } from '../game/ProblemDisplay';
-import { AnswerInput } from '../game/AnswerInput';
+import { MultipleChoice } from '../game/MultipleChoice';
 import { Feedback } from '../game/Feedback';
 import { HintPanel } from '../game/HintPanel';
 import { ScoreBar } from '../game/ScoreBar';
@@ -138,12 +138,7 @@ export function ReviewMistakesScreen({ profile, onNavigate }: ReviewMistakesScre
         {problem && !feedback && (
           <>
             <ProblemDisplay problem={problem} />
-            <AnswerInput
-              onSubmit={handleSubmit}
-              allowSlash={problem.category.includes('fraction')}
-              allowDecimal={problem.category.includes('decimal')}
-              allowText={problem.category === 'prime_numbers' || problem.category === 'arabic_to_roman'}
-            />
+            <MultipleChoice problem={problem} onSubmit={handleSubmit} />
             <HintPanel problem={problem} onUseHint={() => setHintUsed(true)} />
           </>
         )}
