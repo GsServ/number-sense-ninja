@@ -11,6 +11,7 @@ function defaultProfile(): UserProfile {
     lastPracticeDate: '',
     sessions: [],
     categoryStats: {},
+    categoryHistory: {},
   };
 }
 

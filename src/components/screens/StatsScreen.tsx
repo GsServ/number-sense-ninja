@@ -1,9 +1,10 @@
 import { useState, useMemo } from 'react';
 import type { Screen, UserProfile, ProblemCategory } from '@/types';
 import { TIER_CATEGORIES, CATEGORY_DISPLAY_NAMES, LEVEL_NAMES } from '@/types';
-import { getTestSimScores, getBestTestSimScore } from '@/lib/stats';
+import { getTestSimScores, getBestTestSimScore, getCategoryHistory } from '@/lib/stats';
+import { detectErrorPatterns, getRecentMistakes } from '@/lib/errorPatterns';
 import { getWeakestCategories } from '@/lib/adaptive';
-import { ArrowLeft, Lock, Trophy, Zap, Flame, Target, BarChart3 } from 'lucide-react';
+import { ArrowLeft, Lock, Trophy, Zap, Flame, Target, BarChart3, TrendingUp, AlertTriangle } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts';
 
 interface StatsScreenProps {
@@ -16,10 +17,25 @@ export function StatsScreen({ profile, onNavigate }: StatsScreenProps) {
   const [pinInput, setPinInput] = useState('');
   const [pinError, setPinError] = useState(false);
   const [showPinEntry, setShowPinEntry] = useState(false);
+  const [selectedHistoryCat, setSelectedHistoryCat] = useState<ProblemCategory | null>(null);
 
   const testScores = useMemo(() => getTestSimScores(profile), [profile]);
   const bestScore = useMemo(() => getBestTestSimScore(profile), [profile]);
   const weakest = useMemo(() => getWeakestCategories(profile, 5), [profile]);
+
+  const errorPatterns = useMemo(() => {
+    const mistakes = getRecentMistakes(profile.sessions, 100);
+    return detectErrorPatterns(mistakes);
+  }, [profile]);
+
+  const selectedCatHistory = useMemo(() => {
+    if (!selectedHistoryCat) return [];
+    return getCategoryHistory(profile, selectedHistoryCat).map(s => ({
+      date: s.date.slice(5), // MM-DD
+      accuracy: Math.round(s.accuracy * 100),
+      avgTime: Math.round(s.avgTimeMs / 1000 * 10) / 10,
+    }));
+  }, [profile, selectedHistoryCat]);
 
   const totalProblems = profile.sessions.reduce((s, sess) => s + sess.attempts.length, 0);
 
@@ -150,6 +166,68 @@ export function StatsScreen({ profile, onNavigate }: StatsScreenProps) {
                 </div>
               );
             })}
+          </div>
+
+          {/* Error Patterns */}
+          {errorPatterns.length > 0 && (
+            <div className="bg-orange-50 border border-orange-200 rounded-xl p-4">
+              <div className="font-bold text-orange-600 text-sm mb-2 flex items-center gap-1">
+                <AlertTriangle size={14} /> Error Patterns
+              </div>
+              {errorPatterns.slice(0, 6).map((p, i) => (
+                <div key={i} className="flex justify-between text-sm py-1 border-b border-orange-100 last:border-0">
+                  <div>
+                    <span className="text-orange-700 font-semibold">{p.name}</span>
+                    <span className="text-xs text-gray-500 ml-1">({CATEGORY_DISPLAY_NAMES[p.category]})</span>
+                  </div>
+                  <span className={`font-bold px-1.5 py-0.5 rounded text-xs ${
+                    p.count >= 5 ? 'bg-red-100 text-red-600' : 'bg-orange-100 text-orange-600'
+                  }`}>{p.count}x</span>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Category History Trend */}
+          <div className="bg-white border border-gray-200 rounded-xl p-4">
+            <div className="font-bold text-[#1e3a5f] text-sm mb-3 flex items-center gap-1">
+              <TrendingUp size={16} /> Category Trend Over Time
+            </div>
+            <div className="flex flex-wrap gap-1 mb-3">
+              {[...TIER_CATEGORIES[1], ...TIER_CATEGORIES[2], ...TIER_CATEGORIES[3], ...TIER_CATEGORIES[4]]
+                .filter(cat => (profile.categoryHistory[cat]?.length ?? 0) >= 2)
+                .map(cat => (
+                  <button
+                    key={cat}
+                    onClick={() => setSelectedHistoryCat(cat)}
+                    className={`px-2 py-1 rounded text-[10px] font-bold transition-colors ${
+                      selectedHistoryCat === cat
+                        ? 'bg-[#1e3a5f] text-white'
+                        : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
+                    }`}
+                  >
+                    {CATEGORY_DISPLAY_NAMES[cat].slice(0, 10)}
+                  </button>
+                ))
+              }
+            </div>
+            {selectedCatHistory.length >= 2 ? (
+              <ResponsiveContainer width="100%" height={160}>
+                <LineChart data={selectedCatHistory}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="date" tick={{ fontSize: 9 }} />
+                  <YAxis domain={[0, 100]} tick={{ fontSize: 9 }} />
+                  <Tooltip />
+                  <Line type="monotone" dataKey="accuracy" stroke="#22c55e" strokeWidth={2} dot={{ r: 3 }} name="Accuracy %" />
+                </LineChart>
+              </ResponsiveContainer>
+            ) : (
+              <div className="text-xs text-gray-400 text-center py-4">
+                {selectedHistoryCat
+                  ? 'Need at least 2 days of data. Keep practicing!'
+                  : 'Select a category above to see its trend.'}
+              </div>
+            )}
           </div>
 
           {/* Accuracy Chart */}

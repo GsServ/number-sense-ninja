@@ -1,5 +1,5 @@
-import type { UserProfile, ProblemAttempt, CategoryStats, GameSession, ProblemCategory } from '@/types';
-import { getLevelForXp } from '@/types';
+import type { UserProfile, ProblemAttempt, CategoryStats, GameSession, ProblemCategory, CategorySnapshot } from '@/types';
+import { getLevelForXp, TIER_CATEGORIES } from '@/types';
 
 export function updateCategoryStats(
   profile: UserProfile,
@@ -55,17 +55,20 @@ export function updateDailyStreak(profile: UserProfile): UserProfile {
   const today = new Date().toISOString().split('T')[0];
   const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0];
 
-  if (profile.lastPracticeDate === today) {
-    return profile; // already practiced today
+  // Take daily snapshot for long-term history
+  let updated = takeDailySnapshot(profile);
+
+  if (updated.lastPracticeDate === today) {
+    return updated; // already practiced today
   }
 
   let newStreak = 1;
-  if (profile.lastPracticeDate === yesterday) {
-    newStreak = profile.dailyStreak + 1;
+  if (updated.lastPracticeDate === yesterday) {
+    newStreak = updated.dailyStreak + 1;
   }
 
   return {
-    ...profile,
+    ...updated,
     dailyStreak: newStreak,
     lastPracticeDate: today,
   };
@@ -115,4 +118,70 @@ export function getTestSimScores(profile: UserProfile): { date: string; score: n
       date: new Date(s.startTime).toLocaleDateString(),
       score: s.psiaScore!,
     }));
+}
+
+/**
+ * Take a daily snapshot of category stats for long-term trend tracking.
+ * Only creates one snapshot per day per category. Keeps last 90 days.
+ */
+export function takeDailySnapshot(profile: UserProfile): UserProfile {
+  const today = new Date().toISOString().split('T')[0];
+  if (profile.lastSnapshotDate === today) return profile;
+
+  const history = { ...profile.categoryHistory };
+  const allCats: ProblemCategory[] = [
+    ...TIER_CATEGORIES[1], ...TIER_CATEGORIES[2],
+    ...TIER_CATEGORIES[3], ...TIER_CATEGORIES[4],
+  ];
+
+  for (const cat of allCats) {
+    const stats = profile.categoryStats[cat];
+    if (!stats || stats.totalAttempts === 0) continue;
+
+    const snapshot: CategorySnapshot = {
+      date: today,
+      accuracy: stats.attemptsLast20 > 0 ? stats.correctLast20 / stats.attemptsLast20 : 0,
+      avgTimeMs: stats.avgTimeMs,
+      totalAttempts: stats.totalAttempts,
+    };
+
+    const catHistory = history[cat] ?? [];
+    // Don't add duplicate for same day
+    if (catHistory.length > 0 && catHistory[catHistory.length - 1].date === today) {
+      catHistory[catHistory.length - 1] = snapshot;
+    } else {
+      catHistory.push(snapshot);
+    }
+    // Keep last 90 days
+    if (catHistory.length > 90) {
+      catHistory.splice(0, catHistory.length - 90);
+    }
+    history[cat] = catHistory;
+  }
+
+  return {
+    ...profile,
+    categoryHistory: history,
+    lastSnapshotDate: today,
+  };
+}
+
+/**
+ * Get the history timeline for a specific category.
+ */
+export function getCategoryHistory(profile: UserProfile, category: ProblemCategory): CategorySnapshot[] {
+  return profile.categoryHistory[category] ?? [];
+}
+
+/**
+ * Get all attempts for a category across all sessions (not just last 20).
+ */
+export function getAllAttemptsForCategory(profile: UserProfile, category: ProblemCategory): ProblemAttempt[] {
+  const all: ProblemAttempt[] = [];
+  for (const session of profile.sessions) {
+    for (const a of session.attempts) {
+      if (a.category === category) all.push(a);
+    }
+  }
+  return all;
 }

@@ -1,4 +1,4 @@
-import { Home, Swords, BarChart3 } from 'lucide-react';
+import { Home, Swords, BarChart3, Brain } from 'lucide-react';
 import type { Screen } from '@/types';
 
 interface BottomNavProps {
@@ -10,6 +10,7 @@ export function BottomNav({ active, onNavigate }: BottomNavProps) {
   const items: { screen: Screen; icon: React.ReactNode; label: string }[] = [
     { screen: 'home', icon: <Home size={22} />, label: 'Home' },
     { screen: 'speed_drill', icon: <Swords size={22} />, label: 'Drill' },
+    { screen: 'review_mistakes', icon: <Brain size={22} />, label: 'Review' },
     { screen: 'stats', icon: <BarChart3 size={22} />, label: 'Stats' },
   ];
 

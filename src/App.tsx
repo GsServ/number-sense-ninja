@@ -7,6 +7,7 @@ import { SpeedDrillScreen } from './components/screens/SpeedDrillScreen';
 import { TestSimScreen } from './components/screens/TestSimScreen';
 import { EstimationScreen } from './components/screens/EstimationScreen';
 import { StatsScreen } from './components/screens/StatsScreen';
+import { ReviewMistakesScreen } from './components/screens/ReviewMistakesScreen';
 import { BottomNav } from './components/layout/BottomNav';
 
 export default function App() {
@@ -24,7 +25,7 @@ export default function App() {
 
   // Refresh profile when returning to home
   useEffect(() => {
-    if (screen === 'home' || screen === 'stats') {
+    if (screen === 'home' || screen === 'stats' || screen === 'review_mistakes') {
       refreshProfile();
     }
   }, [screen, refreshProfile]);
@@ -37,6 +38,7 @@ export default function App() {
       {screen === 'test_sim' && <TestSimScreen onNavigate={navigate} />}
       {screen === 'estimation' && <EstimationScreen onNavigate={navigate} />}
       {screen === 'stats' && <StatsScreen profile={profile} onNavigate={navigate} />}
+      {screen === 'review_mistakes' && <ReviewMistakesScreen profile={profile} onNavigate={navigate} />}
       <BottomNav active={screen} onNavigate={navigate} />
     </div>
   );

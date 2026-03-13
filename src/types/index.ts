@@ -82,6 +82,13 @@ export type CategoryStats = {
   mastered: boolean;
 };
 
+export interface CategorySnapshot {
+  date: string; // ISO date
+  accuracy: number; // 0-1
+  avgTimeMs: number;
+  totalAttempts: number;
+}
+
 export interface UserProfile {
   name: string;
   totalXp: number;
@@ -90,6 +97,8 @@ export interface UserProfile {
   lastPracticeDate: string;
   sessions: GameSession[];
   categoryStats: Partial<Record<ProblemCategory, CategoryStats>>;
+  categoryHistory: Partial<Record<ProblemCategory, CategorySnapshot[]>>;
+  lastSnapshotDate?: string;
 }
 
 export interface AppSettings {
@@ -103,7 +112,7 @@ export interface StoredData {
   settings: AppSettings;
 }
 
-export type Screen = 'home' | 'practice' | 'speed_drill' | 'test_sim' | 'estimation' | 'stats';
+export type Screen = 'home' | 'practice' | 'speed_drill' | 'test_sim' | 'estimation' | 'stats' | 'review_mistakes';
 
 export const TIER_CATEGORIES: Record<ProblemTier, ProblemCategory[]> = {
   1: [

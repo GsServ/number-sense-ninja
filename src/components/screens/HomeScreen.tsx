@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { Zap, Flame, Target, Trophy, Swords, BookOpen, Timer as TimerIcon, Star } from 'lucide-react';
+import { Zap, Flame, Target, Trophy, Swords, BookOpen, Timer as TimerIcon, Star, Brain } from 'lucide-react';
 import type { Screen, UserProfile } from '@/types';
 import { LEVEL_NAMES, LEVEL_THRESHOLDS, getLevelForXp } from '@/types';
 import { getTodayStats, getBestTestSimScore } from '@/lib/stats';
@@ -100,6 +100,21 @@ export function HomeScreen({ profile, onNavigate }: HomeScreenProps) {
           onClick={() => onNavigate('estimation')}
         />
       </div>
+
+      {/* Review Mistakes */}
+      {profile.sessions.some(s => s.attempts.some(a => !a.isCorrect && a.studentAnswer !== '')) && (
+        <button
+          onClick={() => onNavigate('review_mistakes')}
+          className="w-full flex items-center gap-3 bg-red-50 border border-red-200 rounded-xl p-4
+                     hover:bg-red-100 active:scale-[0.98] transition-all"
+        >
+          <Brain size={24} className="text-[#ef4444]" />
+          <div className="text-left">
+            <div className="font-bold text-[#ef4444] text-sm">Review Mistakes</div>
+            <div className="text-xs text-gray-500">See error patterns and retry problem areas</div>
+          </div>
+        </button>
+      )}
 
       {/* Suggested Practice */}
       {weakestCat && (
