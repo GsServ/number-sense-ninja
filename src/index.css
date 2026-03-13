@@ -1,0 +1,66 @@
+@import "tailwindcss";
+
+@theme {
+  --font-display: 'Nunito', sans-serif;
+  --font-body: 'Nunito', sans-serif;
+  --color-primary: #1e3a5f;
+  --color-primary-light: #2a5a8f;
+  --color-accent: #f59e0b;
+  --color-accent-light: #fbbf24;
+  --color-success: #22c55e;
+  --color-error: #ef4444;
+  --color-estimation: #fbbf24;
+  --color-cream: #faf8f5;
+  --color-dark-bg: #1a1a2e;
+  --color-tier1: #22c55e;
+  --color-tier2: #3b82f6;
+  --color-tier3: #f59e0b;
+  --color-tier4: #a855f7;
+}
+
+* {
+  font-family: 'Nunito', sans-serif;
+}
+
+body {
+  margin: 0;
+  background: var(--color-cream);
+  min-height: 100dvh;
+}
+
+.dark body {
+  background: var(--color-dark-bg);
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-8px); }
+  75% { transform: translateX(8px); }
+}
+
+@keyframes pop-in {
+  0% { transform: scale(0.8); opacity: 0; }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.4); }
+  50% { box-shadow: 0 0 20px 10px rgba(245, 158, 11, 0.2); }
+}
+
+@keyframes count-up {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes flame-flicker {
+  0%, 100% { transform: scaleY(1); }
+  50% { transform: scaleY(1.1) scaleX(0.95); }
+}
+
+.animate-shake { animation: shake 0.4s ease-in-out; }
+.animate-pop-in { animation: pop-in 0.3s ease-out; }
+.animate-pulse-glow { animation: pulse-glow 2s infinite; }
+.animate-count-up { animation: count-up 0.5s ease-out; }
+.animate-flame { animation: flame-flicker 0.5s infinite; }
