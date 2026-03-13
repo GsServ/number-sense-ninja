@@ -12,6 +12,18 @@ function defaultProfile(): UserProfile {
     sessions: [],
     categoryStats: {},
     categoryHistory: {},
+    coins: 0,
+    belt: 'white',
+    streakFreezes: 0,
+    ownedItems: [],
+    equippedAvatar: 'ninja',
+    equippedTheme: 'default',
+    equippedTitle: '',
+    bossesDefeated: 0,
+    tournaments: [],
+    ninjaRaceWins: 0,
+    ninjaRaceLosses: 0,
+    bestRaceStreak: 0,
   };
 }
 

@@ -8,6 +8,7 @@ import { Timer } from '../game/Timer';
 import { ResultsSummary } from '../game/ResultsSummary';
 import { loadData, saveData } from '@/lib/storage';
 import { updateCategoryStats, addXpToProfile, updateDailyStreak, getBestTestSimScore } from '@/lib/stats';
+import { earnCoins, isBountyCategory } from '@/lib/gamification';
 import { ArrowLeft, SkipForward, AlertTriangle } from 'lucide-react';
 import { useTimer } from '@/hooks/useTimer';
 
@@ -111,8 +112,11 @@ export function TestSimScreen({ onNavigate }: TestSimScreenProps) {
     };
 
     let data = loadData();
+    const bounty = isBountyCategory(data.profile, problem.category);
+    const coinEarned = earnCoins(isCorrect, newStreak, bounty);
     data.profile = updateCategoryStats(data.profile, attempt);
     data.profile = addXpToProfile(data.profile, xp);
+    data.profile.coins = (data.profile.coins || 0) + coinEarned;
     saveData(data);
 
     setAttempts(prev => [...prev, attempt]);

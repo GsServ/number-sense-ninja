@@ -62,7 +62,7 @@ export interface ProblemAttempt {
   timestamp: number;
 }
 
-export type GameMode = 'practice' | 'speed_drill' | 'test_sim' | 'estimation';
+export type GameMode = 'practice' | 'speed_drill' | 'test_sim' | 'estimation' | 'ninja_race' | 'boss_battle' | 'daily_challenge' | 'tournament';
 
 export interface GameSession {
   id: string;
@@ -89,6 +89,72 @@ export interface CategorySnapshot {
   totalAttempts: number;
 }
 
+// Belt system
+export type Belt = 'white' | 'yellow' | 'orange' | 'green' | 'blue' | 'purple' | 'brown' | 'black' | 'gold';
+
+export const BELT_ORDER: Belt[] = ['white', 'yellow', 'orange', 'green', 'blue', 'purple', 'brown', 'black', 'gold'];
+
+export const BELT_COLORS: Record<Belt, string> = {
+  white: '#e5e7eb', yellow: '#fbbf24', orange: '#f97316', green: '#22c55e',
+  blue: '#3b82f6', purple: '#a855f7', brown: '#92400e', black: '#1e293b', gold: '#eab308',
+};
+
+export const BELT_REQUIREMENTS: Record<Belt, { totalProblems: number; accuracy: number; categoriesMastered: number }> = {
+  white:  { totalProblems: 0, accuracy: 0, categoriesMastered: 0 },
+  yellow: { totalProblems: 50, accuracy: 0.5, categoriesMastered: 2 },
+  orange: { totalProblems: 150, accuracy: 0.55, categoriesMastered: 5 },
+  green:  { totalProblems: 300, accuracy: 0.6, categoriesMastered: 8 },
+  blue:   { totalProblems: 500, accuracy: 0.65, categoriesMastered: 12 },
+  purple: { totalProblems: 800, accuracy: 0.7, categoriesMastered: 18 },
+  brown:  { totalProblems: 1200, accuracy: 0.75, categoriesMastered: 25 },
+  black:  { totalProblems: 2000, accuracy: 0.8, categoriesMastered: 35 },
+  gold:   { totalProblems: 3500, accuracy: 0.85, categoriesMastered: 45 },
+};
+
+// Shop items
+export interface ShopItem {
+  id: string;
+  name: string;
+  description: string;
+  cost: number;
+  type: 'avatar' | 'theme' | 'powerup' | 'title';
+  icon: string;
+}
+
+// Boss battle
+export interface BossState {
+  bossName: string;
+  bossHp: number;
+  bossMaxHp: number;
+  playerHp: number;
+  playerMaxHp: number;
+  defeated: boolean;
+}
+
+// Daily challenge
+export interface DailyChallenge {
+  date: string; // ISO date
+  seed: number;
+  score: number;
+  completed: boolean;
+  attempts: ProblemAttempt[];
+}
+
+// Tournament
+export interface TournamentEntry {
+  weekId: string; // e.g. "2026-W11"
+  score: number;
+  time: number;
+  completedAt: number;
+}
+
+// Problem bounties
+export interface DailyBounty {
+  date: string;
+  categories: ProblemCategory[];
+  completed: ProblemCategory[];
+}
+
 export interface UserProfile {
   name: string;
   totalXp: number;
@@ -99,6 +165,21 @@ export interface UserProfile {
   categoryStats: Partial<Record<ProblemCategory, CategoryStats>>;
   categoryHistory: Partial<Record<ProblemCategory, CategorySnapshot[]>>;
   lastSnapshotDate?: string;
+  // Gamification
+  coins: number;
+  belt: Belt;
+  streakFreezes: number;
+  ownedItems: string[];
+  equippedAvatar: string;
+  equippedTheme: string;
+  equippedTitle: string;
+  bossesDefeated: number;
+  dailyChallenge?: DailyChallenge;
+  tournaments: TournamentEntry[];
+  dailyBounty?: DailyBounty;
+  ninjaRaceWins: number;
+  ninjaRaceLosses: number;
+  bestRaceStreak: number;
 }
 
 export interface AppSettings {
@@ -112,7 +193,7 @@ export interface StoredData {
   settings: AppSettings;
 }
 
-export type Screen = 'home' | 'practice' | 'speed_drill' | 'test_sim' | 'estimation' | 'stats' | 'review_mistakes';
+export type Screen = 'home' | 'practice' | 'speed_drill' | 'test_sim' | 'estimation' | 'stats' | 'review_mistakes' | 'ninja_race' | 'boss_battle' | 'daily_challenge' | 'shop' | 'tournament';
 
 export const TIER_CATEGORIES: Record<ProblemTier, ProblemCategory[]> = {
   1: [

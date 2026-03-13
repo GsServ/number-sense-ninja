@@ -10,6 +10,8 @@ import { ResultsSummary } from '../game/ResultsSummary';
 import { isEstimationCorrect, calculateXp } from '@/lib/scoring';
 import { loadData, saveData } from '@/lib/storage';
 import { updateCategoryStats, addXpToProfile, updateDailyStreak, getBestTestSimScore } from '@/lib/stats';
+import { earnCoins, isBountyCategory } from '@/lib/gamification';
+import { StreakEffect } from '../game/StreakEffect';
 import { ArrowLeft, Clock } from 'lucide-react';
 
 interface SpeedDrillScreenProps {
@@ -94,9 +96,13 @@ export function SpeedDrillScreen({ onNavigate }: SpeedDrillScreenProps) {
     };
 
     let data = loadData();
+    const bounty = isBountyCategory(data.profile, problem.category);
+    const coinEarned = earnCoins(isCorrect, newStreak, bounty);
+
     data.profile = updateCategoryStats(data.profile, attempt);
     data.profile = addXpToProfile(data.profile, xp);
     data.profile = updateDailyStreak(data.profile);
+    data.profile.coins = (data.profile.coins || 0) + coinEarned;
 
     const newAttempts = [...attempts, attempt];
     setAttempts(newAttempts);
@@ -200,6 +206,7 @@ export function SpeedDrillScreen({ onNavigate }: SpeedDrillScreenProps) {
     <div className={`px-4 py-6 max-w-md mx-auto space-y-4 transition-colors duration-200 ${
       flashState === 'correct' ? 'bg-[#22c55e]/10' : flashState === 'wrong' ? 'bg-[#ef4444]/10' : ''
     }`}>
+      <StreakEffect streak={streak} />
       <div className="flex items-center justify-between">
         <div className="text-sm font-bold text-gray-400">
           {currentIndex + 1} / {DRILL_COUNT}

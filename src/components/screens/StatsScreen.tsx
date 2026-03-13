@@ -1,10 +1,11 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useCallback, useRef } from 'react';
 import type { Screen, UserProfile, ProblemCategory } from '@/types';
 import { TIER_CATEGORIES, CATEGORY_DISPLAY_NAMES, LEVEL_NAMES } from '@/types';
 import { getTestSimScores, getBestTestSimScore, getCategoryHistory } from '@/lib/stats';
 import { detectErrorPatterns, getRecentMistakes } from '@/lib/errorPatterns';
 import { getWeakestCategories } from '@/lib/adaptive';
-import { ArrowLeft, Lock, Trophy, Zap, Flame, Target, BarChart3, TrendingUp, AlertTriangle } from 'lucide-react';
+import { loadData, saveData } from '@/lib/storage';
+import { ArrowLeft, Lock, Trophy, Zap, Flame, Target, BarChart3, TrendingUp, AlertTriangle, Download, Upload, Check, AlertCircle } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts';
 
 interface StatsScreenProps {
@@ -56,6 +57,9 @@ export function StatsScreen({ profile, onNavigate }: StatsScreenProps) {
       .sort((a, b) => a!.accuracy - b!.accuracy);
   }, [profile]);
 
+  const [backupStatus, setBackupStatus] = useState<'idle' | 'exported' | 'imported' | 'error'>('idle');
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
   const handlePinSubmit = () => {
     if (pinInput === '1234') {
       setView('coach');
@@ -65,6 +69,56 @@ export function StatsScreen({ profile, onNavigate }: StatsScreenProps) {
       setPinError(true);
     }
   };
+
+  const handleExport = useCallback(() => {
+    try {
+      const data = loadData();
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      const date = new Date().toISOString().split('T')[0];
+      a.href = url;
+      a.download = `number-sense-ninja-backup-${date}.json`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      setBackupStatus('exported');
+      setTimeout(() => setBackupStatus('idle'), 3000);
+    } catch {
+      setBackupStatus('error');
+      setTimeout(() => setBackupStatus('idle'), 3000);
+    }
+  }, []);
+
+  const handleImport = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      try {
+        const imported = JSON.parse(event.target?.result as string);
+        if (!imported.profile || !imported.settings) {
+          setBackupStatus('error');
+          setTimeout(() => setBackupStatus('idle'), 3000);
+          return;
+        }
+        saveData(imported);
+        setBackupStatus('imported');
+        setTimeout(() => {
+          setBackupStatus('idle');
+          onNavigate('stats');
+        }, 1500);
+      } catch {
+        setBackupStatus('error');
+        setTimeout(() => setBackupStatus('idle'), 3000);
+      }
+    };
+    reader.readAsText(file);
+    // Reset input so the same file can be selected again
+    e.target.value = '';
+  }, [onNavigate]);
 
   return (
     <div className="px-4 py-6 max-w-md mx-auto space-y-5">
@@ -301,6 +355,54 @@ export function StatsScreen({ profile, onNavigate }: StatsScreenProps) {
             {profile.sessions.length === 0 && (
               <div className="text-sm text-gray-400">No sessions yet</div>
             )}
+          </div>
+
+          {/* Backup / Restore */}
+          <div className="bg-white border border-gray-200 rounded-xl p-4">
+            <div className="font-bold text-[#1e3a5f] text-sm mb-3">Backup & Restore</div>
+            <p className="text-xs text-gray-500 mb-3">
+              Export progress to a file or restore from a previous backup. Use this to keep progress safe or transfer between devices.
+            </p>
+
+            {backupStatus === 'exported' && (
+              <div className="flex items-center gap-2 text-[#22c55e] text-sm font-bold mb-3 animate-pop-in">
+                <Check size={16} /> Backup downloaded!
+              </div>
+            )}
+            {backupStatus === 'imported' && (
+              <div className="flex items-center gap-2 text-[#22c55e] text-sm font-bold mb-3 animate-pop-in">
+                <Check size={16} /> Progress restored! Reloading...
+              </div>
+            )}
+            {backupStatus === 'error' && (
+              <div className="flex items-center gap-2 text-[#ef4444] text-sm font-bold mb-3 animate-pop-in">
+                <AlertCircle size={16} /> Something went wrong. Check the file and try again.
+              </div>
+            )}
+
+            <div className="flex gap-2">
+              <button
+                onClick={handleExport}
+                className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-[#3b82f6] text-white
+                           font-bold rounded-lg text-sm active:scale-95 transition-all"
+              >
+                <Download size={16} /> Export
+              </button>
+              <button
+                onClick={() => fileInputRef.current?.click()}
+                className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-[#22c55e] text-white
+                           font-bold rounded-lg text-sm active:scale-95 transition-all"
+              >
+                <Upload size={16} /> Import
+              </button>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept=".json"
+                onChange={handleImport}
+                className="hidden"
+              />
+            </div>
           </div>
         </>
       )}

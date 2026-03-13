@@ -8,6 +8,11 @@ import { TestSimScreen } from './components/screens/TestSimScreen';
 import { EstimationScreen } from './components/screens/EstimationScreen';
 import { StatsScreen } from './components/screens/StatsScreen';
 import { ReviewMistakesScreen } from './components/screens/ReviewMistakesScreen';
+import { NinjaRaceScreen } from './components/screens/NinjaRaceScreen';
+import { BossBattleScreen } from './components/screens/BossBattleScreen';
+import { DailyChallengeScreen } from './components/screens/DailyChallengeScreen';
+import { ShopScreen } from './components/screens/ShopScreen';
+import { TournamentScreen } from './components/screens/TournamentScreen';
 import { BottomNav } from './components/layout/BottomNav';
 
 export default function App() {
@@ -25,7 +30,7 @@ export default function App() {
 
   // Refresh profile when returning to home
   useEffect(() => {
-    if (screen === 'home' || screen === 'stats' || screen === 'review_mistakes') {
+    if (screen === 'home' || screen === 'stats' || screen === 'review_mistakes' || screen === 'shop') {
       refreshProfile();
     }
   }, [screen, refreshProfile]);
@@ -39,6 +44,11 @@ export default function App() {
       {screen === 'estimation' && <EstimationScreen onNavigate={navigate} />}
       {screen === 'stats' && <StatsScreen profile={profile} onNavigate={navigate} />}
       {screen === 'review_mistakes' && <ReviewMistakesScreen profile={profile} onNavigate={navigate} />}
+      {screen === 'ninja_race' && <NinjaRaceScreen onNavigate={navigate} />}
+      {screen === 'boss_battle' && <BossBattleScreen onNavigate={navigate} />}
+      {screen === 'daily_challenge' && <DailyChallengeScreen onNavigate={navigate} />}
+      {screen === 'shop' && <ShopScreen onNavigate={navigate} />}
+      {screen === 'tournament' && <TournamentScreen onNavigate={navigate} />}
       <BottomNav active={screen} onNavigate={navigate} />
     </div>
   );

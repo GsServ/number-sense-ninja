@@ -6,6 +6,7 @@ import { generateProblem } from '@/lib/problems/generator';
 import { isEstimationCorrect, calculateXp } from '@/lib/scoring';
 import { loadData, saveData } from '@/lib/storage';
 import { updateCategoryStats, addXpToProfile, updateDailyStreak } from '@/lib/stats';
+import { earnCoins, isBountyCategory } from '@/lib/gamification';
 import { HINTS } from '@/lib/problems/hints';
 import { ProblemDisplay } from '../game/ProblemDisplay';
 import { MultipleChoice } from '../game/MultipleChoice';
@@ -89,9 +90,12 @@ export function ReviewMistakesScreen({ profile, onNavigate }: ReviewMistakesScre
       hintUsed,
       timestamp: Date.now(),
     };
+    const bounty = isBountyCategory(data.profile, attempt.category);
+    const coinEarned = earnCoins(isCorrect, newStreak, bounty);
     data.profile = updateCategoryStats(data.profile, attempt);
     data.profile = addXpToProfile(data.profile, xp);
     data.profile = updateDailyStreak(data.profile);
+    data.profile.coins = (data.profile.coins || 0) + coinEarned;
     saveData(data);
 
     setStats(prev => ({

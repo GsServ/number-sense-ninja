@@ -11,6 +11,8 @@ import { HINTS } from '@/lib/problems/hints';
 import { isEstimationCorrect, calculateXp } from '@/lib/scoring';
 import { loadData, saveData } from '@/lib/storage';
 import { updateCategoryStats, addXpToProfile, updateDailyStreak } from '@/lib/stats';
+import { earnCoins, isBountyCategory } from '@/lib/gamification';
+import { StreakEffect } from '../game/StreakEffect';
 import { ArrowLeft } from 'lucide-react';
 
 interface PracticeScreenProps {
@@ -62,9 +64,12 @@ export function PracticeScreen({ onNavigate }: PracticeScreenProps) {
       hintUsed,
       timestamp: Date.now(),
     };
+    const bounty = isBountyCategory(data.profile, attempt.category);
+    const coinEarned = earnCoins(isCorrect, newStreak, bounty);
     data.profile = updateCategoryStats(data.profile, attempt);
     data.profile = addXpToProfile(data.profile, xp);
     data.profile = updateDailyStreak(data.profile);
+    data.profile.coins = (data.profile.coins || 0) + coinEarned;
     saveData(data);
 
     setStats(prev => ({
@@ -125,6 +130,7 @@ export function PracticeScreen({ onNavigate }: PracticeScreenProps) {
   // Practice view
   return (
     <div className="px-4 py-6 max-w-md mx-auto space-y-4">
+      <StreakEffect streak={stats.streak} />
       <div className="flex items-center justify-between">
         <button onClick={() => setSelectedCategory(null)} className="flex items-center gap-1 text-[#1e3a5f] font-bold">
           <ArrowLeft size={18} /> Topics

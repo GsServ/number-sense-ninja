@@ -15,6 +15,7 @@ import { ScoreBar } from '../game/ScoreBar';
 import { ResultsSummary } from '../game/ResultsSummary';
 import { loadData, saveData } from '@/lib/storage';
 import { updateCategoryStats, addXpToProfile, updateDailyStreak } from '@/lib/stats';
+import { earnCoins, isBountyCategory } from '@/lib/gamification';
 import { HINTS } from '@/lib/problems/hints';
 import { ArrowLeft } from 'lucide-react';
 
@@ -107,9 +108,12 @@ export function EstimationScreen({ onNavigate }: EstimationScreenProps) {
     };
 
     let data = loadData();
+    const bounty = isBountyCategory(data.profile, attempt.category);
+    const coinEarned = earnCoins(isCorrect, newStreak, bounty);
     data.profile = updateCategoryStats(data.profile, attempt);
     data.profile = addXpToProfile(data.profile, xp);
     data.profile = updateDailyStreak(data.profile);
+    data.profile.coins = (data.profile.coins || 0) + coinEarned;
     saveData(data);
 
     setAttempts(prev => [...prev, attempt]);
